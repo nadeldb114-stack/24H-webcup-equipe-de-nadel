@@ -333,3 +333,156 @@ supabaseClient.auth.onAuthStateChange(
 
     }
 );
+
+// ==========================================
+// UTILISATEUR CONNECTÉ - EN-TÊTE
+// ==========================================
+
+async function afficherUtilisateurConnecte() {
+
+    const { data } = await supabaseClient.auth.getSession();
+    const session = data.session;
+
+    if (!session) return;
+
+    const user = session.user;
+    const nom = user.user_metadata?.nom || user.email;
+
+    // Cherche la navigation du site
+    const navigation = document.querySelector("header nav");
+    document.querySelector("header") 
+    document.body;
+
+    if (!navigation) return;
+
+    // Évite de créer deux fois le profil
+    if (document.getElementById("profil-connecte")) return;
+
+    const profil = document.createElement("div");
+
+    profil.id = "profil-connecte";
+
+    profil.innerHTML = `
+        <button id="bouton-profil" type="button">
+            <span class="profil-avatar">👤</span>
+            <span>${nom}</span>
+        </button>
+
+        <div id="menu-profil" hidden>
+            <a href="#espace">Mon espace</a>
+            <a href="#demarches">Mes démarches</a>
+            <button id="deconnexion" type="button">
+                Se déconnecter
+            </button>
+        </div>
+    `;
+
+    navigation.appendChild(profil);
+
+
+    // Petit style directement injecté
+    const style = document.createElement("style");
+
+    style.textContent = `
+        #profil-connecte {
+            position: relative;
+            margin-left: 15px;
+        }
+
+        #bouton-profil {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 13px;
+            border: 1px solid rgba(255,255,255,.18);
+            border-radius: 30px;
+            background: rgba(8,25,35,.75);
+            color: white;
+            cursor: pointer;
+            font: inherit;
+            font-size: 13px;
+        }
+
+        #bouton-profil:hover {
+            border-color: #78e6c8;
+        }
+
+        .profil-avatar {
+            display: grid;
+            place-items: center;
+            width: 27px;
+            height: 27px;
+            border-radius: 50%;
+            background: rgba(120,230,200,.15);
+        }
+
+        #menu-profil {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 10px);
+            width: 190px;
+            padding: 8px;
+            border: 1px solid rgba(255,255,255,.15);
+            border-radius: 12px;
+            background: #091820;
+            box-shadow: 0 15px 40px rgba(0,0,0,.35);
+            z-index: 9999;
+        }
+
+        #menu-profil a,
+        #menu-profil button {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 11px;
+            border: 0;
+            border-radius: 7px;
+            background: transparent;
+            color: white;
+            text-align: left;
+            text-decoration: none;
+            cursor: pointer;
+            font: inherit;
+            font-size: 13px;
+        }
+
+        #menu-profil a:hover,
+        #menu-profil button:hover {
+            background: rgba(255,255,255,.07);
+        }
+
+        @media (max-width: 900px) {
+            #bouton-profil span:nth-child(2) {
+                display: none;
+            }
+        }
+    `;
+
+    document.head.appendChild(style);
+
+
+    // Ouvrir / fermer le menu
+    const bouton = document.getElementById("bouton-profil");
+    const menu = document.getElementById("menu-profil");
+
+    bouton.addEventListener("click", () => {
+        menu.hidden = !menu.hidden;
+    });
+
+
+    // Déconnexion
+    document
+        .getElementById("deconnexion")
+        .addEventListener("click", async () => {
+
+            await supabaseClient.auth.signOut();
+
+            window.location.hash = "#haut";
+            window.location.reload();
+
+        });
+}
+
+
+// Affichage au chargement
+afficherUtilisateurConnecte();
